@@ -66,6 +66,43 @@ resource "aws_launch_configuration" "jenkins-worker" {
   }
 }
 
+resource "aws_autoscaling_group" "jenkins-worker" {
+  name                 = "ASG-${aws_launch_configuration.jenkins-worker.name}"
+  launch_configuration = aws_launch_configuration.jenkins-worker.name
+  min_size             = 2
+  max_size             = 4
+ #min_elb_capacity     = 2 
+ #health_check_type    = "EC2" # або ELB
+  vpc_zone_identifier  = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  #tags = merge(var.common_tags, { Name = "${var.common_tags["Environment"]} jenkins-worker" })
+  
+dynamic "tag" {
+    for_each = {
+      Name       = "ASG_jenkins_worker"
+      Owner       = "Roman Kuzmyn"
+      Project     = "DevOps-Project-1"
+      Mentor      = "Yaroslav"
+      Environment = "test"
+    }
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true # вбивати старі інстанси після того як створяться нові
+  }
+}
+
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = data.aws_availability_zones.available.names[0]
+}
+
+resource "aws_default_subnet" "default_az2" {
+  availability_zone = data.aws_availability_zones.available.names[1]
+}
 /*
 resource "aws_key_pair" "deployer" { #---------create key------------
   key_name   = "deployer-key"

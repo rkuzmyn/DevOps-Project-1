@@ -12,8 +12,8 @@ variable "instance_type" {
 
 
 variable "common_tags" {
-  description = "Common Tags to apply to all resources"
-  type        = map
+  description   = "Common Tags to apply to all resources"
+  type          = map
   default = {
     Owner       = "Roman Kuzmyn"
     Project     = "DevOps-Project-1"
